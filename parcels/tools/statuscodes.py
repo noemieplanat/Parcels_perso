@@ -193,10 +193,12 @@ def recovery_kernel_out_of_bounds(particle, fieldset, time):
     if particle.exception is None:
         # TODO: JIT does not yet provide the context that created
         # the exception. We need to pass that info back from C.
-        raise OutOfBoundsError(particle, fieldset)
+        particle.delete()
+        #raise OutOfBoundsError(particle, fieldset)
     else:
         error = particle.exception
-        raise OutOfBoundsError(particle, fieldset, error.x, error.y, error.z)
+        particle.delete()
+        #raise OutOfBoundsError(particle, fieldset, error.x, error.y, error.z)
 
 
 def recovery_kernel_through_surface(particle, fieldset, time):

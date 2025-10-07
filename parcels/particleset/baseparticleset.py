@@ -362,7 +362,7 @@ class BaseParticleSet(NDCluster):
             runtime = runtime.total_seconds()
         if isinstance(dt, delta):
             dt = dt.total_seconds()
-        outputdt = output_file.outputdt if output_file else np.infty
+        outputdt = output_file.outputdt if output_file else np.inf
         if isinstance(outputdt, delta):
             outputdt = outputdt.total_seconds()
         if isinstance(moviedt, delta):
@@ -410,9 +410,9 @@ class BaseParticleSet(NDCluster):
             self.show(field=movie_background_field, show_time=_starttime, animation=True)
 
         if moviedt is None:
-            moviedt = np.infty
+            moviedt = np.inf
         if callbackdt is None:
-            interupt_dts = [np.infty, moviedt, outputdt]
+            interupt_dts = [np.inf, moviedt, outputdt]
             if self.repeatdt is not None:
                 interupt_dts.append(self.repeatdt)
             callbackdt = np.min(np.array(interupt_dts))
@@ -420,7 +420,7 @@ class BaseParticleSet(NDCluster):
         if self.repeatdt:
             next_prelease = self.repeat_starttime + (abs(time - self.repeat_starttime) // self.repeatdt + 1) * self.repeatdt * np.sign(dt)
         else:
-            next_prelease = np.infty if dt > 0 else - np.infty
+            next_prelease = np.inf if dt > 0 else - np.inf
         next_output = time + outputdt if dt > 0 else time - outputdt
         next_movie = time + moviedt if dt > 0 else time - moviedt
         next_callback = time + callbackdt if dt > 0 else time - callbackdt

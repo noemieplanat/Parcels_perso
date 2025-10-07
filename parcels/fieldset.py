@@ -1040,7 +1040,7 @@ class FieldSet(object):
         :param dt: time step of the integration scheme
         """
         signdt = np.sign(dt)
-        nextTime = np.infty if dt > 0 else -np.infty
+        nextTime = np.inf if dt > 0 else -np.inf
 
         for g in self.gridset.grids:
             g.update_status = 'not_updated'
@@ -1174,7 +1174,7 @@ class FieldSet(object):
                 depth_data = f.grid.depth_field.data
                 f.grid.depth = depth_data if isinstance(depth_data, np.ndarray) else np.array(depth_data)
 
-        if abs(nextTime) == np.infty or np.isnan(nextTime):  # Second happens when dt=0
+        if abs(nextTime) == np.inf or np.isnan(nextTime):  # Second happens when dt=0
             return nextTime
         else:
             nSteps = int((nextTime - time) / dt)

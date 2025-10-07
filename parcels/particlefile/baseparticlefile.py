@@ -72,7 +72,7 @@ class BaseParticleFile(ABC):
     tempwritedir_base = None
     tempwritedir = None
 
-    def __init__(self, name, particleset, outputdt=np.infty, write_ondelete=False, convert_at_end=True,
+    def __init__(self, name, particleset, outputdt=np.inf, write_ondelete=False, convert_at_end=True,
                  tempwritedir=None, pset_info=None):
 
         self.write_ondelete = write_ondelete

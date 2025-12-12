@@ -1,12 +1,10 @@
 import numpy as np
 
-__all__ = ['GridSet']
+__all__ = ["GridSet"]
 
 
-class GridSet(object):
-    """GridSet class that holds the Grids on which the Fields are defined
-
-    """
+class GridSet:
+    """GridSet class that holds the Grids on which the Fields are defined."""
 
     def __init__(self):
         self.grids = []
@@ -15,7 +13,7 @@ class GridSet(object):
         grid = field.grid
         existing_grid = False
         for g in self.grids:
-            if field.chunksize == 'auto':
+            if field.chunksize == "auto":
                 break
             if g == grid:
                 existing_grid = True
@@ -23,7 +21,7 @@ class GridSet(object):
             sameGrid = True
             if grid.time_origin != g.time_origin:
                 continue
-            for attr in ['lon', 'lat', 'depth', 'time']:
+            for attr in ["lon", "lat", "depth", "time"]:
                 gattr = getattr(g, attr)
                 gridattr = getattr(grid, attr)
                 if gattr.shape != gridattr.shape or not np.allclose(gattr, gridattr):
@@ -38,7 +36,7 @@ class GridSet(object):
 
             if sameGrid:
                 existing_grid = True
-                field.grid = g
+                field._grid = g  # TODO: Is this even necessary?
                 break
 
         if not existing_grid:
@@ -47,16 +45,16 @@ class GridSet(object):
 
     def dimrange(self, dim):
         """Returns maximum value of a dimension (lon, lat, depth or time)
-           on 'left' side and minimum value on 'right' side for all grids
-           in a gridset. Useful for finding e.g. longitude range that
-           overlaps on all grids in a gridset"""
-
+        on 'left' side and minimum value on 'right' side for all grids
+        in a gridset. Useful for finding e.g. longitude range that
+        overlaps on all grids in a gridset.
+        """
         maxleft, minright = (-np.inf, np.inf)
         for g in self.grids:
             if getattr(g, dim).size == 1:
                 continue  # not including grids where only one entry
             else:
-                if dim == 'depth':
+                if dim == "depth":
                     maxleft = max(maxleft, np.min(getattr(g, dim)))
                     minright = min(minright, np.max(getattr(g, dim)))
                 else:

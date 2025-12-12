@@ -1,21 +1,19 @@
-import uuid
 import _ctypes
-from ctypes import c_float
-from ctypes import c_int
-from os import path
-from os import remove
-from sys import platform
+import os
+import sys
+import uuid
+from ctypes import c_float, c_int
 
 import numpy.ctypeslib as npct
 
-from parcels.tools import get_cache_dir, get_package_dir
 from parcels.compilation.codecompiler import GNUCompiler
+from parcels.tools import get_cache_dir, get_package_dir
 from parcels.tools.loggers import logger
 
-__all__ = ['seed', 'random', 'uniform', 'randint', 'normalvariate', 'expovariate', 'vonmisesvariate']
+__all__ = ["expovariate", "normalvariate", "randint", "random", "seed", "uniform", "vonmisesvariate"]
 
 
-class RandomC(object):
+class RandomC:
     stmt_import = """#include "parcels.h"\n\n"""
     fnct_seed = """
 extern void pcls_seed(int seed){
@@ -80,40 +78,40 @@ extern float pcls_vonmisesvariate(float mu, float kappa){
     def unload_lib(self):
         # Unload the currently loaded dynamic linked library to be secure
         if self._lib is not None and self._loaded and _ctypes is not None:
-            _ctypes.FreeLibrary(self._lib._handle) if platform == 'win32' else _ctypes.dlclose(self._lib._handle)
+            _ctypes.FreeLibrary(self._lib._handle) if sys.platform == "win32" else _ctypes.dlclose(self._lib._handle)
             del self._lib
             self._lib = None
             self._loaded = False
 
     def load_lib(self):
-        self._lib = npct.load_library(self.lib_file, '.')
+        self._lib = npct.load_library(self.lib_file, ".")
         self._loaded = True
 
     def remove_lib(self):
         # If file already exists, pull new names. This is necessary on a Windows machine, because
         # Python's ctype does not deal in any sort of manner well with dynamic linked libraries on this OS.
-        if self._lib is not None and self._loaded and _ctypes is not None and path.isfile(self.lib_file):
-            [remove(s) for s in [self.src_file, self.lib_file, self.log_file]]
+        if self._lib is not None and self._loaded and _ctypes is not None and os.path.isfile(self.lib_file):
+            [os.remove(s) for s in [self.src_file, self.lib_file, self.log_file]]
 
     def compile(self, compiler=None):
         if self.src_file is None or self.lib_file is None or self.log_file is None:
-            basename = 'parcels_random_%s' % uuid.uuid4()
+            basename = f"parcels_random_{uuid.uuid4()}"
             lib_filename = "lib" + basename
-            basepath = path.join(get_cache_dir(), "%s" % basename)
-            libpath = path.join(get_cache_dir(), "%s" % lib_filename)
-            self.src_file = "%s.c" % basepath
-            self.lib_file = "%s.so" % libpath
-            self.log_file = "%s.log" % basepath
+            basepath = os.path.join(get_cache_dir(), f"{basename}")
+            libpath = os.path.join(get_cache_dir(), f"{lib_filename}")
+            self.src_file = f"{basepath}.c"
+            self.lib_file = f"{libpath}.so"
+            self.log_file = f"{basepath}.log"
         ccompiler = compiler
         if ccompiler is None:
             cppargs = []
-            incdirs = [path.join(get_package_dir(), 'include'), ]
+            incdirs = [os.path.join(get_package_dir(), "include")]
             ccompiler = GNUCompiler(cppargs=cppargs, incdirs=incdirs)
         if self._lib is None:
-            with open(self.src_file, 'w+') as f:
+            with open(self.src_file, "w+") as f:
                 f.write(self.ccode)
             ccompiler.compile(self.src_file, self.lib_file, self.log_file)
-            logger.info("Compiled %s ==> %s" % ("ParcelsRandom", self.lib_file))
+            logger.info(f"Compiled ParcelsRandom ==> {self.src_file}")
 
     @property
     def lib(self):
@@ -135,13 +133,13 @@ def _assign_parcels_random_ccodeconverter():
 
 
 def seed(seed):
-    """Sets the seed for parcels internal RNG"""
+    """Sets the seed for parcels internal RNG."""
     _assign_parcels_random_ccodeconverter()
     _parcels_random_ccodeconverter.lib.pcls_seed(c_int(seed))
 
 
 def random():
-    """Returns a random float between 0. and 1."""
+    """Returns a random float between 0.0 and 1.0."""
     _assign_parcels_random_ccodeconverter()
     rnd = _parcels_random_ccodeconverter.lib.pcls_random
     rnd.argtype = []
@@ -150,7 +148,7 @@ def random():
 
 
 def uniform(low, high):
-    """Returns a random float between `low` and `high`"""
+    """Returns a random float between `low` and `high`."""
     _assign_parcels_random_ccodeconverter()
     rnd = _parcels_random_ccodeconverter.lib.pcls_uniform
     rnd.argtype = [c_float, c_float]
@@ -159,7 +157,7 @@ def uniform(low, high):
 
 
 def randint(low, high):
-    """Returns a random int between `low` and `high`"""
+    """Returns a random int between `low` and `high`."""
     _assign_parcels_random_ccodeconverter()
     rnd = _parcels_random_ccodeconverter.lib.pcls_randint
     rnd.argtype = [c_int, c_int]
@@ -168,7 +166,7 @@ def randint(low, high):
 
 
 def normalvariate(loc, scale):
-    """Returns a random float on normal distribution with mean `loc` and width `scale`"""
+    """Returns a random float on normal distribution with mean `loc` and width `scale`."""
     _assign_parcels_random_ccodeconverter()
     rnd = _parcels_random_ccodeconverter.lib.pcls_normalvariate
     rnd.argtype = [c_float, c_float]
@@ -177,7 +175,7 @@ def normalvariate(loc, scale):
 
 
 def expovariate(lamb):
-    """Returns a randome float of an exponential distribution with parameter lamb"""
+    """Returns a random float of an exponential distribution with parameter lamb."""
     _assign_parcels_random_ccodeconverter()
     rnd = _parcels_random_ccodeconverter.lib.pcls_expovariate
     rnd.argtype = c_float
@@ -186,8 +184,9 @@ def expovariate(lamb):
 
 
 def vonmisesvariate(mu, kappa):
-    """Returns a randome float of a Von Mises distribution
-    with mean angle mu and concentration parameter kappa"""
+    """Returns a random float of a Von Mises distribution
+    with mean angle mu and concentration parameter kappa.
+    """
     _assign_parcels_random_ccodeconverter()
     rnd = _parcels_random_ccodeconverter.lib.pcls_vonmisesvariate
     rnd.argtype = [c_float, c_float]
